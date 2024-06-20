@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from blog.forms import ProductForm
 from blog.models import Product
 
 
@@ -20,3 +21,12 @@ def product_detail(request, product_id):
         'attributes': attributes
     }
     return render(request, 'product-detail.html', context)
+
+
+def add_product(request):
+    form = ProductForm()
+    context = {
+        'form': form
+
+    }
+    return render(request, 'add-product.html', context)
