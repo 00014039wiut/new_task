@@ -22,5 +22,5 @@ class LoginForm(forms.Form):
             if not user.check_password(password):
                 raise forms.ValidationError('Password did not match')
         except User.DoesNotExist:
-            raise forms.ValidationError(f'{phone_number} does not exists')
+            raise forms.ValidationError(f'{phone_number} does not exist')
         return password

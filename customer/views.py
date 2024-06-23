@@ -32,9 +32,9 @@ def login_page(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
+            phone_number = form.cleaned_data['phone_number']
             password = form.cleaned_data['password']
-            user = authenticate(request, email=email, password=password)
+            user = authenticate(request, phone_number=phone_number, password=password)
             if user:
                 login(request, user)
                 return redirect('customers')
@@ -50,6 +50,3 @@ def register(request):
 
 def logout(request):
     return render(request, 'auth/logout.html')
-
-
-
