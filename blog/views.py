@@ -9,7 +9,7 @@ from blog.models import Product
 def index(request):
     products = Product.objects.all()
     context = {'products': products}
-    return render(request, 'index.html', context)
+    return render(request, 'app/index.html', context)
 
 
 def product_detail(request, product_id):
@@ -20,7 +20,7 @@ def product_detail(request, product_id):
         'product': product,
         'attributes': attributes
     }
-    return render(request, 'product-detail.html', context)
+    return render(request, 'app/product-detail.html', context)
 
 
 def add_product(request):
@@ -29,4 +29,4 @@ def add_product(request):
         'form': form
 
     }
-    return render(request, 'add-product.html', context)
+    return render(request, 'app/add-product.html', context)
