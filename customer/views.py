@@ -22,7 +22,7 @@ def customers(request):
     return render(request, 'customer/customer-list.html', context)
 
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
 from customer.forms import LoginForm
@@ -48,5 +48,6 @@ def register(request):
     return render(request, 'auth/register.html')
 
 
-def logout(request):
+def logout_page(request):
+    logout(request)
     return render(request, 'auth/logout.html')
