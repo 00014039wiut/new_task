@@ -25,7 +25,7 @@ def customers(request):
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
-from customer.forms import LoginForm
+from customer.forms import LoginForm, RegisterModelForm
 
 
 def login_page(request):
@@ -45,7 +45,16 @@ def login_page(request):
 
 
 def register(request):
-    return render(request, 'auth/register.html')
+    if request.method == 'POST':
+        form = RegisterModelForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('customers')
+    else:
+        form = RegisterModelForm()
+
+    return render(request, 'auth/register.html', {"form": form})
 
 
 def logout_page(request):

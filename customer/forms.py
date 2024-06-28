@@ -24,3 +24,24 @@ class LoginForm(forms.Form):
         except User.DoesNotExist:
             raise forms.ValidationError(f'{phone_number} does not exist')
         return password
+
+
+class RegisterModelForm(forms.ModelForm):
+    confirm_password = forms.CharField(max_length=255)
+
+    class Meta:
+        model = User
+        fields = ['username', 'phone_number', 'password']
+
+    def clean_phone_number(self):
+        phone_number = self.data.get('phone_number').lower()
+        if User.objects.filter(phone_number=phone_number).exists():
+            raise forms.ValidationError(f'The {phone_number} is already registered')
+        return phone_number
+
+    def clean_password(self):
+        password = self.data.get('password')
+        confirm_password = self.data.get('confirm_password')
+        if password != confirm_password:
+            raise forms.ValidationError('Password didn\'t match')
+        return password
