@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render
 
 # Create your views here.
@@ -16,6 +17,15 @@ def customers(request):
         customer_list = Customer.objects.filter(full_name__icontains=searched)
     else:
         customer_list = Customer.objects.all()
+        paginator = Paginator(customer_list, 2)
+        page = request.GET.get('page')
+
+        try:
+            customer_list = paginator.page(page)
+        except PageNotAnInteger:
+            customer_list = paginator.page(1)
+        except EmptyPage:
+            customer_list = paginator.page(paginator.num_pages)
     context = {
         'customer_list': customer_list,
     }

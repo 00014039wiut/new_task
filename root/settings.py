@@ -11,19 +11,24 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
+env = os.environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+os.environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i9v^(@((e@$z@kczfp1@)jtzmo58axkij3&rnm^n+x)smmsr8@'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
 
 ALLOWED_HOSTS = []
 
@@ -40,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog',
     'customer.apps.CustomerConfig',
+    'baton.autodiscover'
 ]
 
 MIDDLEWARE = [
@@ -78,8 +84,13 @@ WSGI_APPLICATION = 'root.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('NAME'),
+        'USER': env('USER'),
+        'PASSWORD': env('PASSWORD'),
+        'HOST': env('HOST'),
+        'PORT': env('PORT'),
+        
     }
 }
 
@@ -138,85 +149,3 @@ from baton.ai import AIModels
 
 
 
-BATON = {
-    'SITE_HEADER': 'Baton',
-    'SITE_TITLE': 'Baton',
-    'INDEX_TITLE': 'Site administration',
-    'SUPPORT_HREF': 'https://github.com/otto-torino/django-baton/issues',
-    'COPYRIGHT': 'copyright © 2017 <a href="https://www.otto.to.it">Otto srl</a>',  # noqa
-    'POWERED_BY': '<a href="https://www.otto.to.it">Otto srl</a>',
-    'CONFIRM_UNSAVED_CHANGES': True,
-    'SHOW_MULTIPART_UPLOADING': True,
-    'ENABLE_IMAGES_PREVIEW': True,
-    'CHANGELIST_FILTERS_IN_MODAL': True,
-    'CHANGELIST_FILTERS_ALWAYS_OPEN': False,
-    'CHANGELIST_FILTERS_FORM': True,
-    'CHANGEFORM_FIXED_SUBMIT_ROW': True,
-    'COLLAPSABLE_USER_AREA': False,
-    'MENU_ALWAYS_COLLAPSED': False,
-    'MENU_TITLE': 'Menu',
-    'MESSAGES_TOASTS': False,
-    'GRAVATAR_DEFAULT_IMG': 'retro',
-    'GRAVATAR_ENABLED': True,
-    'FORCE_THEME': None,
-    'LOGIN_SPLASH': '/static/core/img/login-splash.png',
-    'SEARCH_FIELD': {
-        'label': 'Search contents...',
-        'url': '/search/',
-    },
-    'BATON_CLIENT_ID': 'xxxxxxxxxxxxxxxxxxxx',
-    'BATON_CLIENT_SECRET': 'xxxxxxxxxxxxxxxxxx',
-    'AI': {
-        'MODELS': 'ai_models.models',  # string to import the models dictionary
-        'IMAGES_MODEL': AIModels.BATON_DALL_E_3,
-        'SUMMARIZATIONS_MODEL': AIModels.BATON_GPT_4O,
-        'TRANSLATIONS_MODEL': AIModels.BATON_GPT_4O,
-        'ENABLE_TRANSLATIONS': True,
-        'ENABLE_CORRECTIONS': True,
-        'CORRECTION_SELECTORS': ["textarea", "input[type=text]:not(.vDateField):not([name=username]):not([name*=subject_location])"],
-        'CORRECTIONS_MODEL': AIModels.BATON_GPT_3_5_TURBO,
-    },
-    'MENU': (
-        {'type': 'title', 'label': 'main', 'apps': ('auth', )},
-        {
-            'type': 'app',
-            'name': 'auth',
-            'label': 'Authentication',
-            'icon': 'fa fa-lock',
-            'default_open': True,
-            'models': (
-                {'name': 'user', 'label': 'Users'},
-                {'name': 'group', 'label': 'Groups'},
-            )
-        },
-        {'type': 'title', 'label': 'Contents', 'apps': ('flatpages', 'blog', 'customer')},
-        {'type': 'model', 'label': 'Pages', 'name': 'flatpage', 'app': 'flatpages'},
-        {
-            'type': 'app',
-            'name': 'blog',
-            'label': 'Blog',
-            'icon': 'fa fa-book',
-            'models': (
-                {'name': 'product', 'label': 'Products'},
-            )
-        },
-        {
-            'type': 'app',
-            'name': 'customer',
-            'label': 'Customer',
-            'icon': 'fa fa-user',
-            'models': (
-                {'name': 'customer', 'label': 'Customers'},
-            )
-        },
-        {'type': 'free', 'label': 'Custom Link', 'url': 'http://www.google.it', 'perms': ('flatpages.add_flatpage', 'auth.change_user')},
-        {
-            'type': 'free',
-            'label': 'My parent voice',
-            'children': [
-                {'type': 'model', 'label': 'A Model', 'name': 'mymodelname', 'app': 'myapp', 'icon': 'fa fa-gavel'},
-                {'type': 'free', 'label': 'Another custom link', 'url': 'http://www.google.it'},
-            ]
-        },
-    )
-}
