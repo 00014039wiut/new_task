@@ -3,10 +3,12 @@ import json
 
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
-
+from django.views import View
 
 from customer.models import Customer
 import openpyxl
+
+
 # Create your views here.
 
 
@@ -16,7 +18,7 @@ def customers(request):
         customer_list = Customer.objects.filter(full_name__icontains=searched)
     else:
         customer_list = Customer.objects.all()
-        paginator = Paginator(customer_list, 2)
+        paginator = Paginator(customer_list, 3)
         page = request.GET.get('page')
 
         try:
@@ -31,10 +33,16 @@ def customers(request):
     return render(request, 'customer/customer-list.html', context)
 
 
+def customer_detail(request, id):
+    customer = Customer.objects.get(id=id)
+    context = {"customer": customer}
+    return render(request, 'customer/customer-detail.html', context)
+
+
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
-from customer.forms import LoginForm, RegisterModelForm
+from customer.forms import LoginForm, RegisterModelForm, CustomerModelForm
 
 
 def login_page(request):
@@ -118,3 +126,17 @@ def export_data(request):
         response.content = 'Bad request'
 
     return response
+
+
+class AddCustomerView(View):
+    def get(self, request):
+        form = CustomerModelForm()
+        return render(request, 'customer/add-customer.html', {'form': form})
+
+    def post(self, request):
+        form = CustomerModelForm(request.POST, request.FILES)
+        if form.is_valid():
+            customer = form.save(commit=False)
+            customer.save()
+            return redirect('customers')
+        return render(request, 'customer/add-customer.html', {'form': form})

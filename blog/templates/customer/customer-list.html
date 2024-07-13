@@ -370,7 +370,7 @@
                             <button class="btn btn-falcon-default btn-sm" type="button"><span class="fas fa-plus"
                                                                                               data-fa-transform="shrink-3 down-2"></span><span
                                     class="d-none d-sm-inline-block ms-1"><a
-                                    href="#">New</a></span>
+                                    href="{% url 'add_customer' %}">New</a></span>
                             </button>
                             <button class="btn btn-falcon-default btn-sm mx-2" type="button"><span
                                     class="fas fa-filter" data-fa-transform="shrink-3 down-2"></span><span
@@ -424,7 +424,7 @@
                                     </div>
                                 </td>
                                 <td class="name align-middle white-space-nowrap py-2"><a
-                                        href="../../app/e-commerce/customer-details.html">
+                                        href="{% url 'customer-detail' customer.id %}">
                                     <div class="d-flex d-flex align-items-center">
                                         <div class="avatar avatar-xl me-2">
                                             <div class="avatar-name rounded-circle"><span><img
@@ -466,23 +466,7 @@
                 </div>
             </div>
             <div class="card-footer d-flex align-items-center justify-content-center">
-                    <div class="pagination">
-                        <span class="step-links">
-                            {% if page_obj.has_previous %}
-                                <a href="?page=1">&laquo; first</a>
-                                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                            {% endif %}
-
-                            <span class="current">
-                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                            </span>
-
-                            {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}">next</a>
-                                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                            {% endif %}
-                        </span>
-                    </div>
+                    
             </div>
         </div>
         <footer class="footer">

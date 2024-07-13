@@ -21,7 +21,7 @@ class Customer(models.Model):
         return self.email
 
     class Meta:
-        ordering = ('-joined',)
+        ordering = ['id']
         verbose_name_plural = 'Customers'
 
 

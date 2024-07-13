@@ -1,6 +1,6 @@
 from django import forms
 
-from customer.models import User
+from customer.models import User, Customer
 
 
 class LoginForm(forms.Form):
@@ -45,3 +45,10 @@ class RegisterModelForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError('Password didn\'t match')
         return password
+
+
+class CustomerModelForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['full_name', 'phone_number', 'email', 'address', 'image']
+
