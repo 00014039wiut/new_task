@@ -3,40 +3,70 @@ import json
 
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
+from django.urls import reverse_lazy
 from django.views import View
+from django.views.generic import DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.list import ListView
 
 from customer.models import Customer
 import openpyxl
 
 
 # Create your views here.
+class CustomerListView(ListView):
+    model = Customer
+    paginate_by = 10
+    template_name = 'customer/customer-list.html'
+    context_object_name = 'customer_list'
+
+    def get_queryset(self):
+        searched = self.request.GET.get('searched')
+        if searched:
+            customer_list = Customer.objects.filter(full_name__icontains=searched)
+        else:
+            customer_list = Customer.objects.all()
+        return customer_list
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        searched = self.request.GET.get('searched')
+        context['searched'] = searched
+        return context
 
 
-def customers(request):
-    searched = request.GET.get('searched')
-    if searched:
-        customer_list = Customer.objects.filter(full_name__icontains=searched)
-    else:
-        customer_list = Customer.objects.all()
-        paginator = Paginator(customer_list, 3)
-        page = request.GET.get('page')
+# def customers(request):
+#     searched = request.GET.get('searched')
+#     if searched:
+#         customer_list = Customer.objects.filter(full_name__icontains=searched)
+#     else:
+#         customer_list = Customer.objects.all()
+#         paginator = Paginator(customer_list, 4)
+#         page = request.GET.get('page')
+#
+#         try:
+#             customer_list = paginator.page(page)
+#         except PageNotAnInteger:
+#             customer_list = paginator.page(1)
+#         except EmptyPage:
+#             customer_list = paginator.page(paginator.num_pages)
+#     context = {
+#         'customer_list': customer_list,
+#     }
+#     return render(request, 'customer/customer-list.html', context)
 
-        try:
-            customer_list = paginator.page(page)
-        except PageNotAnInteger:
-            customer_list = paginator.page(1)
-        except EmptyPage:
-            customer_list = paginator.page(paginator.num_pages)
-    context = {
-        'customer_list': customer_list,
-    }
-    return render(request, 'customer/customer-list.html', context)
+
+class CustomerDetailView(DetailView):
+    model = Customer
+    template_name = 'customer/customer-detail.html'
+
+    context_object_name = 'customer'
 
 
-def customer_detail(request, id):
-    customer = Customer.objects.get(id=id)
-    context = {"customer": customer}
-    return render(request, 'customer/customer-detail.html', context)
+# def customer_detail(request, id):
+#     customer = Customer.objects.get(id=id)
+#     context = {"customer": customer}
+#     return render(request, 'customer/customer-detail.html', context)
 
 
 from django.contrib.auth import authenticate, login, logout
@@ -128,15 +158,35 @@ def export_data(request):
     return response
 
 
-class AddCustomerView(View):
-    def get(self, request):
-        form = CustomerModelForm()
-        return render(request, 'customer/add-customer.html', {'form': form})
+# class AddCustomerView(View):
+#     def get(self, request):
+#         form = CustomerModelForm()
+#         return render(request, 'customer/add-customer.html', {'form': form})
+#
+#     def post(self, request):
+#         form = CustomerModelForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             customer = form.save(commit=False)
+#             customer.save()
+#             return redirect('customers')
+#         return render(request, 'customer/add-customer.html', {'form': form})
 
-    def post(self, request):
-        form = CustomerModelForm(request.POST, request.FILES)
-        if form.is_valid():
-            customer = form.save(commit=False)
-            customer.save()
-            return redirect('customers')
-        return render(request, 'customer/add-customer.html', {'form': form})
+class AddCustomerView(CreateView):
+    model = Customer
+    form_class = CustomerModelForm
+    template_name = 'customer/add-customer.html'
+    success_url = reverse_lazy('customers')
+
+
+class UpdateCustomerView(UpdateView):
+    model = Customer
+    form_class = CustomerModelForm
+    template_name = 'customer/update-customer.html'
+    success_url = reverse_lazy('customers')
+
+
+class DeleteCustomerView(View):
+    def get(self, request, pk):
+        customer = Customer.objects.get(pk=pk)
+        customer.delete()
+        return redirect('customers')

@@ -56,12 +56,14 @@ class AddProductView(View):
         context = {'form': form}
         return render(request, 'app/add-product.html', context)
 
+
 class UpdateProductView(View):
     def get(self, request, product_id):
         product = Product.objects.get(id=product_id)
         form = ProductModelForm(instance=product)
         context = {'form': form}
         return render(request, 'app/update-product.html', context)
+
     def post(self, request, product_id):
         product = Product.objects.get(id=product_id)
         form = ProductModelForm(instance=product, data=request.POST)
@@ -70,6 +72,8 @@ class UpdateProductView(View):
             form.save()
             return redirect('index')
         return render(request, 'app/update-product.html', context)
+
+
 class DeleteProductView(View):
     def get(self, request, product_id):
         product = Product.objects.get(id=product_id)
