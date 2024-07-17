@@ -52,3 +52,9 @@ class CustomerModelForm(forms.ModelForm):
         model = Customer
         fields = ['full_name', 'phone_number', 'email', 'address', 'image']
 
+
+class EmailForm(forms.Form):
+    subject = forms.CharField(label='Subject', widget=forms.TextInput())
+    message = forms.CharField(label='Message', widget=forms.Textarea())
+    from_email = forms.EmailField(label='From', widget=forms.TextInput())
+    to_email = forms.EmailField(label='To', widget=forms.TextInput())

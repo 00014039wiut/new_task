@@ -1,15 +1,17 @@
 import csv
 import json
 
+from django.contrib.auth.views import LoginView
+from django.core.mail import send_mail
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import DetailView
+from django.views.generic import DetailView, FormView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 
-from customer.models import Customer
+from customer.models import Customer, User
 import openpyxl
 
 
@@ -72,11 +74,31 @@ class CustomerDetailView(DetailView):
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
-from customer.forms import LoginForm, RegisterModelForm, CustomerModelForm
+from customer.forms import LoginForm, RegisterModelForm, CustomerModelForm, EmailForm
 
 
-def login_page(request):
-    if request.method == 'POST':
+# def login_page(request):
+# #     if request.method == 'POST':
+# #         form = LoginForm(request.POST)
+# #         if form.is_valid():
+# #             phone_number = form.cleaned_data['phone_number']
+# #             password = form.cleaned_data['password']
+# #             user = authenticate(request, phone_number=phone_number, password=password)
+# #             if user:
+# #                 login(request, user)
+# #                 return redirect('customers')
+# #     else:
+# #         form = LoginForm()
+# #
+# #     return render(request, 'auth/login.html', {'form': form})
+
+class LoginPageView(View):
+
+    def get(self, request):
+        form = LoginForm()
+        return render(request, 'auth/login.html', {'form': form})
+
+    def post(self, request):
         form = LoginForm(request.POST)
         if form.is_valid():
             phone_number = form.cleaned_data['phone_number']
@@ -84,24 +106,46 @@ def login_page(request):
             user = authenticate(request, phone_number=phone_number, password=password)
             if user:
                 login(request, user)
-                return redirect('customers')
-    else:
-        form = LoginForm()
+                return redirect('customer:customers')
 
-    return render(request, 'auth/login.html', {'form': form})
+        return render(request, 'auth/login.html', {'form': form})
 
 
-def register(request):
-    if request.method == 'POST':
-        form = RegisterModelForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('customers')
-    else:
-        form = RegisterModelForm()
+class LoginPage(LoginView):
+    template_name = 'auth/login.html'
+    redirect_authenticated_user = True
+    authentication_form = LoginForm
 
-    return render(request, 'auth/register.html', {"form": form})
+    # success_url = reverse_lazy('customers')
+
+    def get_success_url(self):
+        return reverse_lazy('customers')
+
+
+# def register(request):
+#     if request.method == 'POST':
+#         form = RegisterModelForm(request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             login(request, user)
+#             return redirect('customers')
+#     else:
+#         form = RegisterModelForm()
+#
+#     return render(request, 'auth/register.html', {"form": form})
+
+class RegisterFormView(FormView):
+    template_name = 'auth/register.html'
+    form_class = RegisterModelForm
+    success_url = reverse_lazy('customer:customers')
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.email = form.cleaned_data['phone_number']
+        user.password = form.cleaned_data['password']
+        user.save()
+        login(self.request, user)
+        return redirect('customer:customers')
 
 
 def logout_page(request):
@@ -190,3 +234,23 @@ class DeleteCustomerView(View):
         customer = Customer.objects.get(pk=pk)
         customer.delete()
         return redirect('customers')
+
+
+def successful_email(request):
+    return render(request, 'customer/successful_email.html')
+
+
+def sending_email(request):
+    if request.method == 'POST':
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+            from_email = form.cleaned_data['from_email']
+            to_email = form.cleaned_data['to_email']
+            send_mail(subject, message, from_email, [to_email], fail_silently=False)
+            return redirect('customers:successful_email')
+    else:
+        form = EmailForm()
+
+    return render(request, 'customer/send_email.html', {'form': form})
