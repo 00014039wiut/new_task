@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
 
@@ -26,7 +27,7 @@ class Customer(models.Model):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    phone_number = models.CharField(max_length=15, unique=True)
+    email = models.EmailField(unique=True)
     username = models.CharField(max_length=255, null=True, blank=True)
     birth_of_date = models.DateField(null=True, blank=True)
 
@@ -35,8 +36,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=True)
 
     objects = CustomUserManager()
-    USERNAME_FIELD = 'phone_number'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.phone_number
+        return self.email
+
+    def save(self, *args, **kwargs):
+        if self.password and not self.password.startswith(('pbkdf2_sha256$', 'bcrypt$', 'argon2')):
+            self.password = make_password(self.password)
+
+        super().save(*args, **kwargs)
+
+    @property
+    def pretty_split_by_email(self):
+        return self.email.split('@')[0]

@@ -155,3 +155,9 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'shohruxabdusaidov@gmail.com'
 EMAIL_HOST_PASSWORD = 'oayh kreb fdti xfxt'
+
+ACCOUNT_SID = env('ACCOUNT_SID')
+AUTH_TOKEN = env('AUTH_TOKEN')
+
+print(f"ACCOUNT_SID: {ACCOUNT_SID}")  # Debugging line
+print(f"AUTH_TOKEN: {AUTH_TOKEN}")

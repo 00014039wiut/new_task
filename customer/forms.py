@@ -4,25 +4,25 @@ from customer.models import User, Customer
 
 
 class LoginForm(forms.Form):
-    phone_number = forms.CharField(label='Phone Number', widget=forms.TextInput())
+    email = forms.CharField(label='Phone Number', widget=forms.TextInput())
     password = forms.CharField(label='Password', widget=forms.PasswordInput())
 
-    def clean_phone_number(self):
-        phone_number = self.data.get('phone_number')
-        if not User.objects.filter(phone_number=phone_number).exists():
+    def clean_email(self):
+        email = self.data.get('email')
+        if not User.objects.filter(email=email).exists():
             raise forms.ValidationError('Email does not exist')
-        return phone_number
+        return email
 
     def clean_password(self):
-        phone_number = self.cleaned_data.get('phone_number')
+        email = self.cleaned_data.get('email')
         password = self.data.get('password')
         try:
-            user = User.objects.get(phone_number=phone_number)
+            user = User.objects.get(email=email)
             print(user)
             if not user.check_password(password):
                 raise forms.ValidationError('Password did not match')
         except User.DoesNotExist:
-            raise forms.ValidationError(f'{phone_number} does not exist')
+            raise forms.ValidationError(f'{email} does not exist')
         return password
 
 
@@ -31,13 +31,13 @@ class RegisterModelForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'phone_number', 'password']
+        fields = ['username', 'email', 'password']
 
-    def clean_phone_number(self):
-        phone_number = self.data.get('phone_number').lower()
-        if User.objects.filter(phone_number=phone_number).exists():
-            raise forms.ValidationError(f'The {phone_number} is already registered')
-        return phone_number
+    def clean_email(self):
+        email = self.data.get('email').lower()
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError(f'The {email} is already registered')
+        return email
 
     def clean_password(self):
         password = self.data.get('password')

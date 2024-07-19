@@ -1,5 +1,12 @@
+from django.conf import settings
 from django.db import models
+from twilio.rest import Client
+import os
+import environ
+env = environ.Env(
 
+)
+environ.Env.read_env()
 
 # Create your models here.
 class Product(models.Model):
@@ -54,3 +61,22 @@ class ProductAttribute(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     attribute = models.ForeignKey('Attribute', on_delete=models.CASCADE)
     attribute_value = models.ForeignKey('AttributeValue', on_delete=models.CASCADE)
+
+
+class SMS(models.Model):
+    to_number = models.TextField(max_length=50)
+
+    def __str__(self):
+        return self.to_number
+
+    def save(self, *args, **kwargs):
+        account_sid = settings.ACCOUNT_SID
+        auth_token = settings.AUTH_TOKEN
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            body='You have successfully registered!',
+            from_='+13193083049',
+            to=self.to_number,
+        )
+        print(message.sid)
+        return super(SMS, self).save(*args, **kwargs)

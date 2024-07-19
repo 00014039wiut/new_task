@@ -1,11 +1,16 @@
 import csv
 import json
 
+from django.contrib import messages
 from django.contrib.auth.views import LoginView
-from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail, EmailMessage
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils.encoding import force_str, force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
 from django.views.generic import DetailView, FormView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -13,6 +18,8 @@ from django.views.generic.list import ListView
 
 from customer.models import Customer, User
 import openpyxl
+
+from customer.tokens import account_activation_token
 
 
 # Create your views here.
@@ -35,6 +42,43 @@ class CustomerListView(ListView):
         searched = self.request.GET.get('searched')
         context['searched'] = searched
         return context
+
+
+def activate(request, uidb64, token):
+    user = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = user.objects.get(pk=uid)
+    except:
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+
+        messages.success(request, "Thank you for your email confirmation. Now you can login your account.")
+        return redirect('customer:login')
+    else:
+        messages.error(request, "Activation link is invalid!")
+
+    return redirect('customer:customers')
+
+
+def activateEmail(request, user, to_email):
+    mail_subject = "Activate your user account."
+    message = render_to_string("auth/activate_account.html", {
+        'user': user.username,
+        'domain': get_current_site(request).domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+        "protocol": 'https' if request.is_secure() else 'http'
+    })
+    email = EmailMessage(mail_subject, message, to=[to_email])
+    if email.send():
+        messages.success(request, f'Dear <b>{user}</b>, please go to you email <b>{to_email}</b> inbox and click on \
+                received activation link to confirm and complete the registration. <b>Note:</b> Check your spam folder.')
+    else:
+        messages.error(request, f'Problem sending email to {to_email}, check if you typed it correctly.')
 
 
 # def customers(request):
@@ -71,7 +115,7 @@ class CustomerDetailView(DetailView):
 #     return render(request, 'customer/customer-detail.html', context)
 
 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.shortcuts import render, redirect
 
 from customer.forms import LoginForm, RegisterModelForm, CustomerModelForm, EmailForm
@@ -101,9 +145,9 @@ class LoginPageView(View):
     def post(self, request):
         form = LoginForm(request.POST)
         if form.is_valid():
-            phone_number = form.cleaned_data['phone_number']
+            email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = authenticate(request, phone_number=phone_number, password=password)
+            user = authenticate(request, email=email, password=password)
             if user:
                 login(request, user)
                 return redirect('customer:customers')
@@ -122,17 +166,24 @@ class LoginPage(LoginView):
         return reverse_lazy('customers')
 
 
-# def register(request):
-#     if request.method == 'POST':
-#         form = RegisterModelForm(request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             login(request, user)
-#             return redirect('customers')
-#     else:
-#         form = RegisterModelForm()
-#
-#     return render(request, 'auth/register.html', {"form": form})
+def register(request):
+    if request.method == 'POST':
+        form = RegisterModelForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            activateEmail(request, user, form.cleaned_data.get('email'))
+            return redirect('homepage')
+
+        else:
+            for error in list(form.errors.values()):
+                messages.error(request, error)
+    else:
+        form = RegisterModelForm()
+
+    return render(request, 'auth/register.html', {"form": form})
+
 
 class RegisterFormView(FormView):
     template_name = 'auth/register.html'
@@ -249,7 +300,7 @@ def sending_email(request):
             from_email = form.cleaned_data['from_email']
             to_email = form.cleaned_data['to_email']
             send_mail(subject, message, from_email, [to_email], fail_silently=False)
-            return redirect('customers:successful_email')
+            return redirect('customer:successful_email')
     else:
         form = EmailForm()
 

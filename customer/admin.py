@@ -1,6 +1,7 @@
 from adminsortable2.admin import SortableAdminMixin
 from django.contrib import admin
 
+from blog.models import SMS
 from customer.models import Customer
 
 
@@ -12,3 +13,4 @@ class CustomerAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('full_name', 'email', 'joined', 'address')
     search_fields = ('joined', 'full_name')
     list_filter = ('joined', 'address')
+
