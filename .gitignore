@@ -1,4 +1,4 @@
-.env/
+.env
 my_venv/
 __pycache__/
 # Django #
