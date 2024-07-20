@@ -160,8 +160,7 @@ EMAIL_HOST_PASSWORD = 'oayh kreb fdti xfxt'
 ACCOUNT_SID = env('ACCOUNT_SID')
 AUTH_TOKEN = env('AUTH_TOKEN')
 
-print(f"ACCOUNT_SID: {ACCOUNT_SID}")  # Debugging line
-print(f"AUTH_TOKEN: {AUTH_TOKEN}")
+
 
 AUTHENTICATION_BACKENDS = (
 
