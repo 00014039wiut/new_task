@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'baton.autodiscover',
     'import_export',
     'adminsortable2',
+    'social_django'
 ]
 
 MIDDLEWARE = [
@@ -161,3 +162,22 @@ AUTH_TOKEN = env('AUTH_TOKEN')
 
 print(f"ACCOUNT_SID: {ACCOUNT_SID}")  # Debugging line
 print(f"AUTH_TOKEN: {AUTH_TOKEN}")
+
+AUTHENTICATION_BACKENDS = (
+
+    'social_core.backends.google.GoogleOAuth2',
+
+    'social_core.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.twitter.TwitterOAuth',
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '346538251703-4t3i6piv59ogckpluv47qtkpr9j0r6h8.apps.googleusercontent.com'  # Google Client ID
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'  # Google Client Secret
+
+SOCIAL_AUTH_FACEBOOK_KEY = '497942012930457'  # Facebook App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = '12ZcTiGZFWydqY4rDW6FbF1ArsBbdNaPxz'  # Facebook App Secret
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+
+SOCIAL_AUTH_TWITTER_KEY = 'xvz1evFS4wEEPTGEFPHBog'  # Twitter API Key
+SOCIAL_AUTH_TWITTER_SECRET: str = 'k6Xw5j5o5j2k1S9v8j4K2b1J4d8r6s9Q6g5r1Q2c4b5A1E2v5R'  # Twitter API Secret

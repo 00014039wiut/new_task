@@ -2,7 +2,7 @@ from django.urls import path
 
 from customer.views import CustomerListView, logout_page, export_data, \
   AddCustomerView, CustomerDetailView, UpdateCustomerView, DeleteCustomerView, LoginPageView, \
-  LoginPage, RegisterFormView, sending_email, successful_email, register, activate
+  LoginPage, RegisterFormView, sending_email, successful_email, register, activate, email_sent
 
 app_name = 'customer'
 urlpatterns = [
@@ -17,6 +17,7 @@ urlpatterns = [
   path("<int:pk>/delete", DeleteCustomerView.as_view(), name="customer-delete"),
   path("email-sending/", sending_email, name="sending_email"),
   path('successful_email/', successful_email, name='successful_email'),
-  path('activate/<uidb64>/<token>', activate, name='activate')
+  path('activate/<uidb64>/<token>', activate, name='activate'),
+  path('email-sent/', email_sent, name='email_sent'),
 
 ]

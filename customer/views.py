@@ -57,7 +57,7 @@ def activate(request, uidb64, token):
         user.save()
 
         messages.success(request, "Thank you for your email confirmation. Now you can login your account.")
-        return redirect('customer:login')
+        return redirect('customer:customers')
     else:
         messages.error(request, "Activation link is invalid!")
 
@@ -73,8 +73,9 @@ def activateEmail(request, user, to_email):
         'token': account_activation_token.make_token(user),
         "protocol": 'https' if request.is_secure() else 'http'
     })
-    email = EmailMessage(mail_subject, message, to=[to_email])
-    if email.send():
+
+    if send_mail(subject=mail_subject, message=message, from_email='shohruxabdusaidov@gmail.com',
+                 recipient_list=[to_email], fail_silently=False):
         messages.success(request, f'Dear <b>{user}</b>, please go to you email <b>{to_email}</b> inbox and click on \
                 received activation link to confirm and complete the registration. <b>Note:</b> Check your spam folder.')
     else:
@@ -174,7 +175,7 @@ def register(request):
             user.is_active = False
             user.save()
             activateEmail(request, user, form.cleaned_data.get('email'))
-            return redirect('homepage')
+            return redirect('customer:email_sent')
 
         else:
             for error in list(form.errors.values()):
@@ -185,10 +186,15 @@ def register(request):
     return render(request, 'auth/register.html', {"form": form})
 
 
+def email_sent(request):
+    return render(request, 'auth/email-sent.html', )
+
+
 class RegisterFormView(FormView):
     template_name = 'auth/register.html'
     form_class = RegisterModelForm
     success_url = reverse_lazy('customer:customers')
+
 
     def form_valid(self, form):
         user = form.save(commit=False)
