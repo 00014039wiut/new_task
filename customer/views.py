@@ -276,7 +276,7 @@ class AddCustomerView(CreateView):
     model = Customer
     form_class = CustomerModelForm
     template_name = 'customer/add-customer.html'
-    success_url = reverse_lazy('customers')
+    success_url = reverse_lazy('customer:customers')
 
 
 class UpdateCustomerView(UpdateView):
@@ -290,7 +290,7 @@ class DeleteCustomerView(View):
     def get(self, request, pk):
         customer = Customer.objects.get(pk=pk)
         customer.delete()
-        return redirect('customers')
+        return redirect('customer:customers')
 
 
 def successful_email(request):
